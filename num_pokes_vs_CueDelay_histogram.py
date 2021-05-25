@@ -7,7 +7,7 @@ fig = plt.figure(figsize=(12.0, 6.0))
 fig1 = fig.add_subplot(1, 1, 1)
 # add a subplot into the figure
 
-animalIDs = ['SNL_photo36', 'SNL_photo38', 'SNL_photo39', 'SNL_photo40']
+animalIDs = ['SNL_photo36'] #'SNL_photo38', 'SNL_photo39', 'SNL_photo40']
 
 for animalID in animalIDs:
     df = pd.read_pickle('/home/mwisdom/Documents/data_analysis/analysed_data/One_Second_Hold/' + animalID + '/AllSessionsDataframe/' + animalID + '_all_sessions.pkl')
@@ -32,23 +32,26 @@ for animalID in animalIDs:
         df_to_append = pd.DataFrame.from_dict(v)
         df_NumCentrePokes_CueDelay = df_NumCentrePokes_CueDelay.append(df_to_append)
 
-    x_values = df_NumCentrePokes_CueDelay['CueDelay'].unique()
+    x_values = np.linspace(0.02, 1, 15)[:13]
     y_values = []
 
-    for x in x_values:
-        filt = df_NumCentrePokes_CueDelay['CueDelay'] == x
+    for count, n in enumerate(np.linspace(0.02, 1, 15)):
+        if count == (x_values.size -1):
+            break
+        elif count == (x_values.size - 2):
+            filt = (df_NumCentrePokes_CueDelay['CueDelay'] >= n) & (df_NumCentrePokes_CueDelay['CueDelay'] <= x_values[count + 1])
+        else:
+            filt = (df_NumCentrePokes_CueDelay['CueDelay'] >= n) & (df_NumCentrePokes_CueDelay['CueDelay'] < x_values[count + 1])
         filtered_df = df_NumCentrePokes_CueDelay.loc[filt]
         CueDelayTime_mean = filtered_df['NumberOfCentrePokes'].mean()
-        FractionOfPokesCorrect = (1/CueDelayTime_mean)*100
-        y_values.append(FractionOfPokesCorrect)
+        #FractionOfPokesCorrect = 1/CueDelayTime_mean
+        y_values.append(CueDelayTime_mean)
 
-    plt.plot(x_values, y_values, label= animalID)
+    plt.bar(x= x_values, height= y_values, width= 0.05, label= animalID)
 
 fig1.legend()
 # add legend to figure using the relevant AnimalIDs
-fig1.set(title='Correct centre pokes for first 15 trials at a cue delay time', ylabel='Correct centre pokes (%)',
+fig1.set(title='Fraction of centre pokes correct for first 15 trials at a cue delay time', ylabel='Fraction of pokes correct',
          xlabel='Cue delay times (s)')
 
 fig.tight_layout()
-plt.savefig('/home/mwisdom/Documents/data_analysis/analysed_data/One_Second_Hold/figures/' + 'lineplot_CueDelay_vs_PercCorrectCentrePokes_SNL_photo36_38_39_40.png')
-

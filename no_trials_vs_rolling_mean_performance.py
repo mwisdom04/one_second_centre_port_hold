@@ -37,8 +37,11 @@ for n, animalID in enumerate(animalIDs):
         pass
 
     ax[n].axhline(50, ls='--', alpha=0.4, color='k')
-    ax[n].axhline(100, ls='--', alpha=0.4, color='k')
-    ax[n].axhline(75, ls='--', alpha=0.2, color='k')
+    ax[n].axhline(75, ls='--', alpha=0.1, color='k')
+    ax[n].set(ylim=(0, 100))
+    ax[n].set_ylabel("Rolling Mean", fontsize=12)
+    ax[n].set_xlabel('Trial number', fontsize=12)
+    ax[n].tick_params(labelsize=12)
 
     df['rolling_mean'] = df['FirstPokeCorrect'].rolling(50, min_periods=1).sum()*2
 
@@ -72,29 +75,31 @@ for n, (k, v) in enumerate(ExpGroups.items()):
         df['TrainingLevel'].replace({1: 'Habituation', 3: 'Auditory'}, inplace=True)
 
         ax[n].axhline(50, ls='--', alpha=0.4, color='k')
-        ax[n].axhline(100, ls='--', alpha=0.4, color='k')
-        ax[n].axhline(75, ls='--', alpha=0.2, color='k')
-        ax[n].set(ylim=(40, 100))
+        ax[n].axhline(75, ls='--', alpha=0.1, color='k')
+        ax[n].set(ylim=(0, 100))
         ax[n].set(xlim=(0, 2000))
+        ax[n].set_ylabel("Rolling Mean", fontsize=12)
+        ax[n].set_xlabel('Trial number', fontsize=12)
+        ax[n].tick_params(labelsize=12)
 
         df['rolling_mean'] = df['FirstPokeCorrect'].rolling(50, min_periods=1).sum()*2
 
         sns.lineplot(ax=ax[n], x=df.index, y='rolling_mean', data=df, color='grey',
-                     marker=".", alpha=0.2, markeredgewidth=0, linewidth=0, label= animalID)
+                     marker=".", alpha=0.2, markeredgewidth=0, linewidth=0,) #label= animalID)
 
         df_2[animalID] = df.loc[0:1000, 'rolling_mean']
 
     df_2['mean_all_animals'] = df_2.mean(axis=1)
 
     sns.lineplot(ax=ax[n], x=df_2.index, y='mean_all_animals', data=df_2, color='orange',
-                     marker=".", alpha=0.5, markeredgewidth=0, linewidth=0, label='mean')
+                     marker=".", alpha=0.5, markeredgewidth=0, linewidth=0) #label='mean')
 
 
     ax[n].set_title(k)
 
-    leg = plt.legend()
-    for lh in leg.legendHandles:
-        lh.set_alpha(1)
+    #leg = plt.legend()
+    #for lh in leg.legendHandles:
+        #lh.set_alpha(1)
     '''lgd = plt.legend(bbox_to_anchor=(1.005, 1), loc=2, borderaxespad=0.)
     for l in lgd.get_lines():
         l.set_alpha(1)

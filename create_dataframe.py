@@ -10,31 +10,71 @@ import os
     - only create new dataframes for those sessions which dataframes haven't previously been created
     - check number of trials in a session and discard if under (x) no trials'''
 
-animalIDs = ['SNL_photo36', 'SNL_photo38', 'SNL_photo39', 'SNL_photo40']
+# do you want to overwrite pkl files previously created for the mouse? write True if yes and False if no
+overwrite_old_files = False
+
+animalIDs = ['SNL_photo45', 'SNL_photo47', 'SNL_photo48', 'SNL_photo49', 'SNL_photo50','SNL_photo52', 'SNL_photo53', 'SNL_photo54']         #'SNL_photo45', 'SNL_photo47', 'SNL_photo48', 'SNL_photo49', 'SNL_photo50',
 
 for animalID in animalIDs:
 
+    print('Curating dataframe for ' + animalID)
+
     BehaviouralTask = '/Two_Alternative_Choice_CentrePortHold/'
 
-    inputDir = '/mnt/winstor/sjones/data/bpod_raw_data/'
-    outputDir = '/home/mwisdom/Documents/data_analysis/analysed_data/One_Second_Hold/' + animalID
+    inputDir = '/mnt/winstor/sjones/users/Matt/photometry_2AC/bpod_data/'
+    outputDir = '/home/mwisdom/Documents/data/analysed_data/one_second_centre_port_hold/' + animalID
     if not os.path.isdir(outputDir):
         os.mkdir(outputDir)
 
     filenames_bpod_data = sorted(glob.glob(inputDir + animalID + BehaviouralTask + 'Session Data/' + '*.mat'))
-    filenames_bpod_settings = sorted(glob.glob(inputDir + animalID + BehaviouralTask + 'Session Settings/' + '*.mat'))
+    #filenames_bpod_settings = sorted(glob.glob(inputDir + animalID + BehaviouralTask + 'Session Settings/' + '*.mat'))
 
-    if len(filenames_bpod_settings) != len(filenames_bpod_data) + 1:
-        print('error: number of settings files does not match data files')
+    #if len(filenames_bpod_settings) != len(filenames_bpod_data) + 1:
+        #print('error: number of settings files does not match data files')
 
 
     for count, bpod_file in enumerate(filenames_bpod_data):
+
+        extract_start = bpod_file.find('Session Data/') + len('Session Data/')
+        extract_end = bpod_file.find('.mat')
+        outputFileName = outputDir + '/' + bpod_file[extract_start:extract_end] + '.pkl'
+
+        Session_time_date = bpod_file.split("Session Data/", 1)[1]
+
+        if overwrite_old_files == False:
+            if (os.path.isfile(outputFileName)):
+                print('Session already analysed: ' + Session_time_date)
+                continue
+            else:
+                pass
+
+        mat = loadmat(bpod_file)
+
+        SessionData = mat['SessionData']
+
+        try:
+            SessionData['nTrials']
+        except:
+            print('Session is invalid: ' + Session_time_date)
+            continue
+        else:
+            pass
+
+        nTrials = SessionData['nTrials']
+
+        if nTrials < 10:
+            print('Session ignored as less then 10 trials: ' + Session_time_date)
+            continue
+        else:
+            pass
+
+        print('Analysing session: ' + Session_time_date)
 
         mat_and_RawEvents = load_bpod_file(bpod_file)
         mat = mat_and_RawEvents[0]
         RawEvents = mat_and_RawEvents[1]
 
-        mat_settings = loadmat(filenames_bpod_settings[count])
+        #mat_settings = loadmat(filenames_bpod_settings[count])
 
         SessionData = mat['SessionData']
         nTrials = SessionData['nTrials']
@@ -48,7 +88,6 @@ for animalID in animalIDs:
         FirstPoke = SessionData['FirstPoke'][0:nTrials]
         FirstPokeCorrect = SessionData['FirstPokeCorrect'][0:nTrials]
 
-
         RawData = SessionData['RawData']
         RawEvents = SessionData['RawEvents']
 
@@ -61,8 +100,17 @@ for animalID in animalIDs:
         TrialStartTimestamps = SessionData['TrialStartTimestamp'][0:nTrials]
         TrialEndTimestamps = SessionData['TrialEndTimestamp'][0:nTrials]
 
-        TrainingLevel = mat_settings['TrialSettings']['GUI']['TrainingLevel']
-        RewardAmount = mat_settings['TrialSettings']['GUI']['RewardAmount']
+        #TrainingLevel = mat_settings['TrialSettings']['GUI']['TrainingLevel']
+        #RewardAmount = mat_settings['TrialSettings']['GUI']['RewardAmount']
+
+        TrainingLevel = SessionData['SettingsFile']['GUI']['TrainingLevel']
+        TrainingLevel = [TrainingLevel] * nTrials
+        RewardAmount = SessionData['SettingsFile']['GUI']['RewardAmount']
+        RewardAmount = [RewardAmount] * nTrials
+        Punish = SessionData['SettingsFile']['GUI']['Punish']
+        Punish = [Punish] * nTrials
+        VariableCueDelay = SessionData['SettingsFile']['GUI']['VariableCueDelay']
+        VariableCueDelay = [VariableCueDelay] * nTrials
 
         df = pd.DataFrame(TrialSequence, columns=['TrialSequence'])
         df['TrialSide'] = TrialSide
@@ -81,6 +129,13 @@ for animalID in animalIDs:
         df['TrialEndTimestamps'] = TrialEndTimestamps
         df['TrainingLevel'] = TrainingLevel
         df['RewardAmount'] = RewardAmount
+        df['Punish'] = Punish
+        df['VariableCueDelay'] = VariableCueDelay
+        df['RollingMean'] = df['FirstPokeCorrect'].rolling(50, min_periods=1).sum() * 2
+
+        CumPer = df['FirstPokeCorrect'].cumsum()
+        CumPer = (100 * CumPer)/(df.index + 1)
+        df['CumulativePerformance'] = CumPer
 
         CueDelay = []
         #NumberOfCentrePokes = []
@@ -118,10 +173,22 @@ for animalID in animalIDs:
             TrialEvents = RawEvents['Trial'][n]['Events']
             Port2In = TrialEvents['Port2In']
             Port2Out = TrialEvents['Port2Out']
-            if isinstance(Port2In, np.ndarray):
+            if isinstance(Port2In, float):
+                Port2In_list = []
+                Port2In_list.append(Port2In)
+                Port2In = np.asarray(Port2In_list)
+            elif isinstance(Port2Out, float):
+                Port2Out_list = []
+                Port2Out_list.append(Port2Out)
+                Port2Out = np.asarray(Port2Out_list)
+            else:
+                pass
+            if isinstance(Port2In, np.ndarray) & isinstance(Port2Out, np.ndarray):
                 if len(Port2In) == len(Port2Out):
                     TrialCentrePortHoldTimes = Port2Out - Port2In
-                else:
+                elif len(Port2In) == len(Port2Out) + 1:
+                    TrialCentrePortHoldTimes = Port2Out - Port2In[:-1]
+                elif len(Port2In) + 1 == len(Port2Out):
                     TrialCentrePortHoldTimes = Port2Out[1:] - Port2In
             else:
                 TrialCentrePortHoldTimes = Port2Out - Port2In
@@ -136,15 +203,9 @@ for animalID in animalIDs:
         df['CentrePortHoldTimes'] = CentrePortHoldTimes
         df['NumberOfCentrePokes'] = NumberOfCentrePokes
 
+        df.to_pickle(outputFileName)
 
-
-
-        extract_start = bpod_file.find('Session Data/') + len('Session Data/')
-        extract_end = bpod_file.find('.mat')
-
-        df.to_pickle(outputDir + '/' + bpod_file[extract_start:extract_end] + '.pkl')
-
-        print(outputDir + '/' + bpod_file[extract_start:extract_end] + '.pkl')
+        print('dataframe saved as: ' + outputFileName)
 
 
 

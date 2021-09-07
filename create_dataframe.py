@@ -13,7 +13,7 @@ import os
 # do you want to overwrite pkl files previously created for the mouse? write True if yes and False if no
 overwrite_old_files = False
 
-animalIDs = ['SNL_photo45', 'SNL_photo47', 'SNL_photo48', 'SNL_photo49', 'SNL_photo50','SNL_photo52', 'SNL_photo53', 'SNL_photo54']         #'SNL_photo45', 'SNL_photo47', 'SNL_photo48', 'SNL_photo49', 'SNL_photo50',
+animalIDs = ['SNL_photo45'] #'SNL_photo50','SNL_photo52', 'SNL_photo53', 'SNL_photo54']         #'SNL_photo45', 'SNL_photo47', 'SNL_photo48', 'SNL_photo49', 'SNL_photo50',
 
 for animalID in animalIDs:
 
@@ -21,8 +21,8 @@ for animalID in animalIDs:
 
     BehaviouralTask = '/Two_Alternative_Choice_CentrePortHold/'
 
-    inputDir = '/mnt/winstor/sjones/users/Matt/photometry_2AC/bpod_data/'
-    outputDir = '/home/mwisdom/Documents/data/analysed_data/one_second_centre_port_hold/' + animalID
+    inputDir = '/home/matthew/Documents/transferred_files/'
+    outputDir = '/home/matthew/Documents/data/analysed_data/one_second_centre_port_hold/' + animalID
     if not os.path.isdir(outputDir):
         os.mkdir(outputDir)
 

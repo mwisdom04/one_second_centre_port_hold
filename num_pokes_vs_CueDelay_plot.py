@@ -7,10 +7,10 @@ fig = plt.figure(figsize=(12.0, 6.0))
 fig1 = fig.add_subplot(1, 1, 1)
 # add a subplot into the figure
 
-animalIDs = ['SNL_photo36', 'SNL_photo38', 'SNL_photo39', 'SNL_photo40']
+animalIDs = ['CPH07', 'CPH08', 'CPH09', 'CPH10', 'CPH11', 'CPH12']
 
 for animalID in animalIDs:
-    df = pd.read_pickle('/home/mwisdom/Documents/data_analysis/analysed_data/One_Second_Hold/' + animalID + '/AllSessionsDataframe/' + animalID + '_all_sessions.pkl')
+    df = pd.read_pickle('/home/mwisdom/Documents/data/analysed_data/one_second_centre_port_hold/' + animalID + '/AllSessionsDataframe/' + animalID + '_all_sessions.pkl')
     CueDelayTimes = df['CueDelay'].unique()
     CueDelayTimes.sort()
 

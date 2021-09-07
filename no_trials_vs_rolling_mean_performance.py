@@ -3,12 +3,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-animalIDs = ['SNL_photo45', 'SNL_photo47', 'SNL_photo48', 'SNL_photo49', 'SNL_photo50', 'SNL_photo52', 'SNL_photo53', 'SNL_photo54'] #'SNL_photo38', 'SNL_photo39', 'SNL_photo40']
+animalIDs = ['SNL_photo45', 'SNL_photo47', 'SNL_photo48', 'SNL_photo49', 'SNL_photo50', 'SNL_photo52', 'SNL_photo53', 'SNL_photo54'] #'SNL_photo36', 'SNL_photo38', 'SNL_photo39', 'SNL_photo40', 'CPH07', 'CPH08', 'CPH09', 'CPH10', 'CPH11', 'CPH12'
 
-ExpGroups = {'Weekdays only': ['SNL_photo45', 'SNL_photo47', 'SNL_photo48', 'SNL_photo49'], 'Weekdays & Weekends': ['SNL_photo50', 'SNL_photo52', 'SNL_photo53', 'SNL_photo54']}
+ExpGroups = {'Weekdays only': ['SNL_photo45', 'SNL_photo47', 'SNL_photo48', 'SNL_photo49'], 'Weekdays & Weekends': ['SNL_photo50', 'SNL_photo52', 'SNL_photo53', 'SNL_photo54']}  #' 'CPHv1': ['SNL_photo36', 'SNL_photo38', 'SNL_photo39', 'SNL_photo40'], 'CPHv2': ['CPH07', 'CPH08', 'CPH09', 'CPH10', 'CPH11', 'CPH12']
 
 InputDir = '/home/mwisdom/Documents/data/analysed_data/one_second_centre_port_hold/'
-OutputDir = '/home/mwisdom/Documents/figures/one_second_centre_port_hold/weekdays_only_vs_weekday_&_weekend/'
+OutputDir = '/home/mwisdom/Documents/figures/one_second_centre_port_hold/weekdays_only_vs_weekday_&_weekend/'  #CPH_v1_vs_CPH_v2
 
 fig, ax = plt.subplots(len(animalIDs), 1, figsize=(15, (len(animalIDs)*5)), sharex=True)
 fig.subplots_adjust(hspace=0.3)
@@ -37,7 +37,7 @@ for n, animalID in enumerate(animalIDs):
         pass
 
     ax[n].axhline(50, ls='--', alpha=0.4, color='k')
-    ax[n].axhline(75, ls='--', alpha=0.1, color='k')
+    ax[n].axhline(70, ls='--', alpha=0.1, color='k')
     ax[n].set(ylim=(0, 100))
     ax[n].set_ylabel("Rolling Mean", fontsize=12)
     ax[n].set_xlabel('Trial number', fontsize=12)
@@ -56,7 +56,7 @@ for l in lgd.get_lines():
 
 #plt.show()
 
-plt.savefig(OutputDir + 'CumulativePerformanceAllAnimals.pdf',
+plt.savefig(OutputDir + 'RollingMeanPerformanceAllAnimals.pdf',
             transparent=True, bbox_inches='tight')
 
 
@@ -75,8 +75,8 @@ for n, (k, v) in enumerate(ExpGroups.items()):
         df['TrainingLevel'].replace({1: 'Habituation', 3: 'Auditory'}, inplace=True)
 
         ax[n].axhline(50, ls='--', alpha=0.4, color='k')
-        ax[n].axhline(75, ls='--', alpha=0.1, color='k')
-        ax[n].set(ylim=(0, 100))
+        ax[n].axhline(70, ls='--', alpha=0.1, color='k')
+        ax[n].set(ylim=(30, 100))
         ax[n].set(xlim=(0, 2000))
         ax[n].set_ylabel("Rolling Mean", fontsize=12)
         ax[n].set_xlabel('Trial number', fontsize=12)
@@ -87,7 +87,7 @@ for n, (k, v) in enumerate(ExpGroups.items()):
         sns.lineplot(ax=ax[n], x=df.index, y='rolling_mean', data=df, color='grey',
                      marker=".", alpha=0.2, markeredgewidth=0, linewidth=0,) #label= animalID)
 
-        df_2[animalID] = df.loc[0:1000, 'rolling_mean']
+        df_2[animalID] = df.loc[0:2000, 'rolling_mean']
 
     df_2['mean_all_animals'] = df_2.mean(axis=1)
 
@@ -105,7 +105,7 @@ for n, (k, v) in enumerate(ExpGroups.items()):
         l.set_alpha(1)
         l.set_linewidth(2)'''
 
-plt.savefig(OutputDir + 'CumulativePerformanceAllAnimalsByCohort.pdf',
-            transparent=True, bbox_inches='tight')
+#plt.savefig(OutputDir + 'RollingMeanPerformanceAllAnimalsByCohort.pdf',
+            #transparent=True, bbox_inches='tight')
 
 
